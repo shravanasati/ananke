@@ -33,7 +33,7 @@ func TestConvertString(t *testing.T) {
 		{
 			name:     "Escaping Special Characters",
 			input:    `<p>*Markdown* needs escaping: [link]</p>`,
-			expected: `\*Markdown\* needs escaping: \[link\]\n\n`,
+			expected: `\*Markdown\* needs escaping: \[link\]` + "\n\n",
 		},
 		{
 			name:     "Unordered List",

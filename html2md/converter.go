@@ -1,6 +1,7 @@
 package html2md
 
 import (
+	"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -14,8 +15,8 @@ func NewConverter() *Converter {
 	return &Converter{}
 }
 
-func markdownElementToCodeStart(elem MarkdownElementType) string {
-	switch elem {
+func markdownElementToCodeStart(elem MarkdownElement) string {
+	switch elem.Type() {
 	case H1:
 		return "# "
 	case H2:
@@ -32,14 +33,16 @@ func markdownElementToCodeStart(elem MarkdownElementType) string {
 		return "**"
 	case Italic:
 		return "*"
+	case Anchor:
+		return "["
 	default:
 		return ""
 	}
 }
 
-func markdownElementToCodeEnd(elem MarkdownElementType) string {
+func markdownElementToCodeEnd(elem MarkdownElement) string {
 	// For elements that need closing syntax
-	switch elem {
+	switch elem.Type() {
 	case Bold:
 		return "**"
 	case Italic:
@@ -48,33 +51,51 @@ func markdownElementToCodeEnd(elem MarkdownElementType) string {
 		return "\n"
 	case Paragraph:
 		return "\n\n"
+	case Anchor:
+		return fmt.Sprintf("](%v)", elem.(*AnchorTag).href)
 	default:
 		return ""
 	}
 }
 
-func htmlNodeToMarkdownType(node *html.Node) MarkdownElementType {
+func findHrefAttribute(node *html.Node) string {
+	if node.Type != html.ElementNode && node.Data != "a" {
+		panic("findHrefAttribute function called non-anchor tag")
+	}
+	for _, attr := range node.Attr {
+		if attr.Key == "href" {
+			return attr.Val
+		}
+	}
+
+	return ""
+}
+
+func htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	switch node.Data {
 	case "h1":
-		return H1
+		return NewH1Tag()
 	case "h2":
-		return H2
+		return NewH2Tag()
 	case "h3":
-		return H3
+		return NewH3Tag()
 	case "h4":
-		return H4
+		return NewH4Tag()
 	case "h5":
-		return H5
+		return NewH5Tag()
 	case "h6":
-		return H6
+		return NewH6Tag()
 	case "b", "strong":
-		return Bold
+		return NewBoldTag()
 	case "i", "em":
-		return Italic
+		return NewItalicTag()
 	case "p":
-		return Paragraph
+		return NewParagraphTag()
+	case "a":
+		href := findHrefAttribute(node)
+		return NewAnchorTag(href)
 	default:
-		return Unknown
+		return NewUnknownTag()
 	}
 }
 
@@ -85,7 +106,7 @@ func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
 		output.WriteString((escapeMarkdown(node.Data)))
 	case html.ElementNode:
 		// Determine the Markdown type
-		markdownElem := htmlNodeToMarkdownType(node)
+		markdownElem := htmlNodeToMarkdownElement(node)
 
 		// Write opening Markdown syntax
 		output.WriteString(markdownElementToCodeStart(markdownElem))
@@ -119,7 +140,6 @@ func (c *Converter) ConvertString(input string) (string, error) {
 
 func escapeMarkdown(text string) string {
 	// Escape special Markdown characters
-	// const specialCharacters = `\*_{}[]()#+-.!`
 	replacer := strings.NewReplacer(
 		`\`, `\\`, `*`, `\*`, `_`, `\_`, `{`, `\{`, `}`, `\}`,
 		`[`, `\[`, `]`, `\]`, `(`, `\(`, `)`, `\)`, `#`, `\#`,
