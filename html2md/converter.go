@@ -1,7 +1,6 @@
 package html2md
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -15,55 +14,9 @@ func NewConverter() *Converter {
 	return &Converter{}
 }
 
-func markdownElementToCodeStart(elem MarkdownElement) string {
-	switch elem.Type() {
-	case H1:
-		return "# "
-	case H2:
-		return "## "
-	case H3:
-		return "### "
-	case H4:
-		return "#### "
-	case H5:
-		return "##### "
-	case H6:
-		return "###### "
-	case Bold:
-		return "**"
-	case Italic:
-		return "*"
-	case Anchor:
-		return "["
-	default:
-		return ""
-	}
-}
-
-func markdownElementToCodeEnd(elem MarkdownElement) string {
-	// For elements that need closing syntax
-	switch elem.Type() {
-	case Bold:
-		return "**"
-	case Italic:
-		return "*"
-	case H1, H2, H3, H4, H5, H6:
-		return "\n"
-	case Paragraph:
-		return "\n\n"
-	case Anchor:
-		return fmt.Sprintf("](%v)", elem.(*AnchorTag).href)
-	default:
-		return ""
-	}
-}
-
-func findHrefAttribute(node *html.Node) string {
-	if node.Type != html.ElementNode && node.Data != "a" {
-		panic("findHrefAttribute function called non-anchor tag")
-	}
+func findAttribute(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
-		if attr.Key == "href" {
+		if attr.Key == key {
 			return attr.Val
 		}
 	}
@@ -92,10 +45,17 @@ func htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	case "p":
 		return NewParagraphTag()
 	case "a":
-		href := findHrefAttribute(node)
+		href := findAttribute(node, "href")
 		return NewAnchorTag(href)
+	case "img":
+		src := findAttribute(node, "src")
+		alt := findAttribute(node, "alt")
+		if alt == "" {
+			alt = "image"
+		}
+		return NewImageTag(src, alt)
 	default:
-		return NewUnknownTag()
+		return NewUnknownTag(node.Data)
 	}
 }
 
@@ -109,7 +69,7 @@ func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
 		markdownElem := htmlNodeToMarkdownElement(node)
 
 		// Write opening Markdown syntax
-		output.WriteString(markdownElementToCodeStart(markdownElem))
+		output.WriteString(markdownElem.StartCode())
 
 		// Recursively process child nodes
 		for child := node.FirstChild; child != nil; child = child.NextSibling {
@@ -117,7 +77,12 @@ func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
 		}
 
 		// Write closing Markdown syntax
-		output.WriteString(markdownElementToCodeEnd(markdownElem))
+		endCode := markdownElem.EndCode()
+		if isBlockLevelElem(htmlNodeToMarkdownElement(node.Parent)) {
+			// this is to prevent extra newlines
+			endCode = strings.TrimSuffix(endCode, "\n")
+		}
+		output.WriteString(endCode)
 	}
 }
 

@@ -1,6 +1,13 @@
 package html2md
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+func replaceNewline(s string) string {
+	return strings.ReplaceAll(s, "\n", "<newline>")
+}
 
 func TestConvertString(t *testing.T) {
 	converter := &Converter{}
@@ -58,7 +65,27 @@ func TestConvertString(t *testing.T) {
 		{
 			name:     "Complex Document",
 			input:    `<h1>Welcome</h1><p>This is <strong>bold</strong>, <em>italic</em>, and <a href="https://example.com">a link</a>.</p><ul><li>Item 1</li><li>Item 2</li></ul>`,
-			expected: "# Welcome\n\nThis is **bold**, *italic*, and [a link](https://example.com).\n\n- Item 1\n- Item 2\n\n",
+			expected: "# Welcome\nThis is **bold**, *italic*, and [a link](https://example.com).\n\n- Item 1\n- Item 2\n\n",
+		},
+		{
+			name:     "Image Without Alt Text",
+			input:    `<img src="https://example.com/image.png" />`,
+			expected: "![image](https://example.com/image.png)\n",
+		},
+		{
+			name:     "Image With Alt Text",
+			input:    `<img src="https://example.com/image.png" alt="An example image" />`,
+			expected: "![An example image](https://example.com/image.png)\n",
+		},
+		{
+			name:     "Image Inside Paragraph",
+			input:    `<p>Here is an image: <img src="https://example.com/image.png" alt="An example image" /></p>`,
+			expected: "Here is an image: ![An example image](https://example.com/image.png)\n\n",
+		},
+		{
+			name:     "Complex Document with Images",
+			input:    `<h1>Gallery</h1><p>Check this out: <img src="https://example.com/cat.png" alt="A cat" /></p><img src="https://example.com/dog.png" />`,
+			expected: "# Gallery\nCheck this out: ![A cat](https://example.com/cat.png)\n\n![image](https://example.com/dog.png)\n",
 		},
 	}
 
@@ -70,7 +97,7 @@ func TestConvertString(t *testing.T) {
 			}
 
 			if output != test.expected {
-				t.Errorf("unexpected output:\nGot:      %s\nExpected: %s", output, test.expected)
+				t.Errorf("unexpected output:\nGot:      %s\nExpected: %s", replaceNewline(output), replaceNewline(test.expected))
 			}
 		})
 	}
