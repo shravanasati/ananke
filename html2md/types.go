@@ -2,7 +2,6 @@ package html2md
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 )
 
@@ -268,15 +267,4 @@ func (u UnknownTag) StartCode() string { return "" }
 func (u UnknownTag) EndCode() string   { return "" }
 func NewUnknownTag(data string) *UnknownTag {
 	return &UnknownTag{data: data}
-}
-
-// utility functions
-
-// Block level tags are those tags which render newlines at the end.
-var blockLevelElements = []MarkdownElementType{
-	Paragraph, H1, H2, H3, H4, H5, H6, Image, ListItem, List,
-}
-
-func isBlockLevelElem(elem MarkdownElement) bool {
-	return slices.Contains(blockLevelElements, elem.Type())
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// to better view the test output, \n -> <newline>
 func replaceNewline(s string) string {
 	return strings.ReplaceAll(s, "\n", "<newline>")
 }
@@ -64,7 +65,7 @@ func TestConvertString(t *testing.T) {
 		{
 			name:     "Nested List",
 			input:    `<ul><li>Item 1<ul><li>Subitem 1</li></ul></li><li>Item 2</li></ul>`,
-			expected: "- Item 1\n\t- Subitem 1\n- Item 2\n\n",
+			expected: "- Item 1\n\t- Subitem 1\n\n- Item 2\n\n",
 		},
 		{
 			name:     "Hyperlink",

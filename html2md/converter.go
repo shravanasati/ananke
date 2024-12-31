@@ -102,7 +102,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	}
 }
 
-func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
+func (c *Converter) convertNode(node *html.Node, output *outputWriter) {
 	switch node.Type {
 	case html.TextNode:
 		// Write the text content, escaping special Markdown characters
@@ -121,10 +121,6 @@ func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
 
 		// Write closing Markdown syntax
 		endCode := markdownElem.EndCode()
-		if isBlockLevelElem(c.htmlNodeToMarkdownElement(node.Parent)) {
-			// this is to prevent extra newlines
-			endCode = strings.TrimSuffix(endCode, "\n")
-		}
 		output.WriteString(endCode)
 
 		if markdownElem.Type() == ListItem && node.NextSibling == nil {
@@ -140,7 +136,7 @@ func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
 }
 
 func (c *Converter) ConvertString(input string) (string, error) {
-	var output strings.Builder
+	output := newOutputWriter()
 
 	// Parse the HTML input into a document tree
 	doc, err := html.Parse(strings.NewReader(input))
@@ -150,7 +146,7 @@ func (c *Converter) ConvertString(input string) (string, error) {
 
 	// Start recursive conversion from the root node's children
 	for node := doc.FirstChild; node != nil; node = node.NextSibling {
-		c.convertNode(node, &output)
+		c.convertNode(node, output)
 	}
 
 	return output.String(), nil
