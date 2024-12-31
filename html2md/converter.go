@@ -17,6 +17,7 @@ func NewConverter() *Converter {
 	return &Converter{listStack: stack, processed: map[string]bool{}}
 }
 
+// performs a linear search for the given attribute in a html node
 func findAttribute(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
 		if attr.Key == key {
@@ -67,6 +68,8 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 			// this tag has not been processed before
 			c.listStack.push(newListEntry(UnorderedList))
 			c.processed[fingerprint] = true
+			depth := c.listStack.size() - 1
+			return NewListTag(UnorderedList, depth)
 		}
 		return NewUnknownTag(node.Data)
 	case "ol":
@@ -74,6 +77,9 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		if _, ok := c.processed[fingerprint]; !ok {
 			// this tag has not been processed before
 			c.listStack.push(newListEntry(OrderedList))
+			c.processed[fingerprint] = true
+			depth := c.listStack.size() - 1
+			return NewListTag(OrderedList, depth)
 		}
 		return NewUnknownTag(node.Data)
 

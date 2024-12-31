@@ -20,6 +20,7 @@ const (
 	Paragraph
 	Anchor
 	Image
+	List // can be ordered as well unordered
 	ListItem
 	Unknown
 )
@@ -211,6 +212,28 @@ const (
 	OrderedList
 )
 
+type ListTag struct {
+	type_ ListOrdering
+	depth int
+}
+
+func (l ListTag) Type() MarkdownElementType {
+	return List
+}
+
+func (l ListTag) StartCode() string {
+	if l.depth == 0 {
+		return ""
+	}
+	return "\n"
+}
+func (l ListTag) EndCode() string {
+	return ""
+}
+func NewListTag(type_ ListOrdering, depth int) *ListTag {
+	return &ListTag{type_: type_, depth: depth}
+}
+
 type ListItemTag struct {
 	depth  int
 	type_  ListOrdering
@@ -251,7 +274,7 @@ func NewUnknownTag(data string) *UnknownTag {
 
 // Block level tags are those tags which render newlines at the end.
 var blockLevelElements = []MarkdownElementType{
-	Paragraph, H1, H2, H3, H4, H5, H6, Image, ListItem,
+	Paragraph, H1, H2, H3, H4, H5, H6, Image, ListItem, List,
 }
 
 func isBlockLevelElem(elem MarkdownElement) bool {
