@@ -10,7 +10,6 @@ func replaceNewline(s string) string {
 }
 
 func TestConvertString(t *testing.T) {
-	converter := &Converter{}
 
 	tests := []struct {
 		name     string
@@ -38,9 +37,19 @@ func TestConvertString(t *testing.T) {
 			expected: "# Title\n## Subtitle\n",
 		},
 		{
+			name:     "Heading with Bold text",
+			input:    `<h4><strong>Important</strong> heading</h4>`,
+			expected: `#### **Important** heading` + "\n",
+		},
+		{
 			name:     "Escaping Special Characters",
 			input:    `<p>*Markdown* needs escaping: [link]</p>`,
 			expected: `\*Markdown\* needs escaping: \[link\]` + "\n\n",
+		},
+		{
+			name:     "More escaping",
+			input:    `<h2># Heading #</h2><p># failed heading #hashtag</p>`,
+			expected: `## \# Heading \#` + "\n" + `\# failed heading \#hashtag` + "\n\n",
 		},
 		{
 			name:     "Unordered List",
@@ -61,6 +70,18 @@ func TestConvertString(t *testing.T) {
 			name:     "Hyperlink",
 			input:    `<p>Visit <a href="https://example.com">example</a>.</p>`,
 			expected: "Visit [example](https://example.com).\n\n",
+		},
+		{
+			name: "Complex hyperlink",
+			input: `<a href="/post">Line 1 <br/>
+<strong>Line 2</strong> <br/>
+Line 3 <br/>
+</a>`,
+			expected: `[Line 1
+\
+**Line 2**
+\
+Line 3](/post)`,
 		},
 		{
 			name:     "Complex Document",
@@ -91,6 +112,7 @@ func TestConvertString(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			converter := NewConverter()
 			output, err := converter.ConvertString(test.input)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)

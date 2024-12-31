@@ -8,10 +8,13 @@ import (
 
 type Converter struct {
 	// todo add options
+	listStack *stack[*listEntry]
+	processed map[string]bool
 }
 
 func NewConverter() *Converter {
-	return &Converter{}
+	stack := newStack[*listEntry]()
+	return &Converter{listStack: stack, processed: map[string]bool{}}
 }
 
 func findAttribute(node *html.Node, key string) string {
@@ -24,7 +27,7 @@ func findAttribute(node *html.Node, key string) string {
 	return ""
 }
 
-func htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
+func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	switch node.Data {
 	case "h1":
 		return NewH1Tag()
@@ -38,15 +41,18 @@ func htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		return NewH5Tag()
 	case "h6":
 		return NewH6Tag()
+
 	case "b", "strong":
 		return NewBoldTag()
 	case "i", "em":
 		return NewItalicTag()
 	case "p":
 		return NewParagraphTag()
+
 	case "a":
 		href := findAttribute(node, "href")
 		return NewAnchorTag(href)
+
 	case "img":
 		src := findAttribute(node, "src")
 		alt := findAttribute(node, "alt")
@@ -54,6 +60,37 @@ func htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 			alt = "image"
 		}
 		return NewImageTag(src, alt)
+
+	case "ul":
+		fingerprint := generateFingerprint(node)
+		if _, ok := c.processed[fingerprint]; !ok {
+			// this tag has not been processed before
+			c.listStack.push(newListEntry(UnorderedList))
+			c.processed[fingerprint] = true
+		}
+		return NewUnknownTag(node.Data)
+	case "ol":
+		fingerprint := generateFingerprint(node)
+		if _, ok := c.processed[fingerprint]; !ok {
+			// this tag has not been processed before
+			c.listStack.push(newListEntry(OrderedList))
+		}
+		return NewUnknownTag(node.Data)
+
+	case "li":
+		topmost, err := c.listStack.top()
+		if err != nil {
+			panic("li tag without parent ol/ul tag")
+		}
+		depth := c.listStack.size() - 1
+		var number int
+		if topmost.type_ == UnorderedList {
+			number = 0
+		} else {
+			number = topmost.counter.next()
+		}
+		return NewListItemTag(depth, topmost.type_, number)
+
 	default:
 		return NewUnknownTag(node.Data)
 	}
@@ -66,23 +103,33 @@ func (c *Converter) convertNode(node *html.Node, output *strings.Builder) {
 		output.WriteString((escapeMarkdown(node.Data)))
 	case html.ElementNode:
 		// Determine the Markdown type
-		markdownElem := htmlNodeToMarkdownElement(node)
+		markdownElem := c.htmlNodeToMarkdownElement(node)
 
 		// Write opening Markdown syntax
 		output.WriteString(markdownElem.StartCode())
 
 		// Recursively process child nodes
-		for child := node.FirstChild; child != nil; child = child.NextSibling {
+		for child := range node.ChildNodes() {
 			c.convertNode(child, output)
 		}
 
 		// Write closing Markdown syntax
 		endCode := markdownElem.EndCode()
-		if isBlockLevelElem(htmlNodeToMarkdownElement(node.Parent)) {
+		if isBlockLevelElem(c.htmlNodeToMarkdownElement(node.Parent)) {
 			// this is to prevent extra newlines
 			endCode = strings.TrimSuffix(endCode, "\n")
 		}
 		output.WriteString(endCode)
+
+		if markdownElem.Type() == ListItem && node.NextSibling == nil {
+			// last li tag in a list
+			_, err := c.listStack.pop()
+			if err != nil {
+				// stack underflow
+				panic("no items in listStack to pop for the last li tag")
+			}
+			output.WriteString("\n")  // write an extra newline when the list ends
+		}
 	}
 }
 

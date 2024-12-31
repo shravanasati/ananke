@@ -3,6 +3,7 @@ package html2md
 import (
 	"fmt"
 	"slices"
+	"strings"
 )
 
 type MarkdownElementType int
@@ -19,6 +20,7 @@ const (
 	Paragraph
 	Anchor
 	Image
+	ListItem
 	Unknown
 )
 
@@ -149,6 +151,8 @@ func NewItalicTag() *ItalicTag {
 }
 
 // todo strikethrough tag
+// todo blockquote tag
+// todo code tag
 
 type ParagraphTag struct{}
 
@@ -183,7 +187,7 @@ func NewAnchorTag(href string) *AnchorTag {
 }
 
 type ImageTag struct {
-	src string
+	src     string
 	altText string
 }
 
@@ -200,6 +204,36 @@ func NewImageTag(src, altText string) *ImageTag {
 	return &ImageTag{src: src, altText: altText}
 }
 
+type ListOrdering uint
+
+const (
+	UnorderedList = iota
+	OrderedList
+)
+
+type ListItemTag struct {
+	depth  int
+	type_  ListOrdering
+	number int
+}
+
+func (li ListItemTag) Type() MarkdownElementType {
+	return ListItem
+}
+
+func (li ListItemTag) StartCode() string {
+	if li.type_ == UnorderedList {
+		return strings.Repeat("\t", li.depth) + "- "
+	}
+	return fmt.Sprintf("%v%v. ", strings.Repeat("\t", li.depth), li.number)
+}
+func (li ListItemTag) EndCode() string {
+	return "\n"
+}
+func NewListItemTag(depth int, type_ ListOrdering, number int) *ListItemTag {
+	return &ListItemTag{depth: depth, type_: type_, number: number}
+}
+
 type UnknownTag struct {
 	data string
 }
@@ -207,18 +241,17 @@ type UnknownTag struct {
 func (u UnknownTag) Type() MarkdownElementType {
 	return Unknown
 }
-func (u UnknownTag) StartCode() string {return ""}
-func (u UnknownTag) EndCode() string {return ""}
+func (u UnknownTag) StartCode() string { return "" }
+func (u UnknownTag) EndCode() string   { return "" }
 func NewUnknownTag(data string) *UnknownTag {
 	return &UnknownTag{data: data}
 }
-
 
 // utility functions
 
 // Block level tags are those tags which render newlines at the end.
 var blockLevelElements = []MarkdownElementType{
-	Paragraph, H1, H2, H3, H4, H5, H6, Image,
+	Paragraph, H1, H2, H3, H4, H5, H6, Image, ListItem,
 }
 
 func isBlockLevelElem(elem MarkdownElement) bool {
