@@ -86,8 +86,11 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	case "li":
 		topmost, err := c.listStack.top()
 		if err != nil {
-			// todo add an unordered list in the stack
-			panic("li tag without parent ol/ul tag")
+			// if list items without a parent ol/ul tags are found,
+			// insert an ul tag in the stack
+			topmost = newListEntry(UnorderedList)
+			c.listStack.push(topmost)
+			// panic("li tag without parent ol/ul tag")
 		}
 		depth := c.listStack.size() - 1
 		var number int
@@ -108,6 +111,7 @@ func (c *Converter) convertNode(node *html.Node, output *outputWriter) {
 	case html.TextNode:
 		// Write the text content, escaping special Markdown characters
 		output.WriteString((escapeMarkdown(node.Data)))
+
 	case html.ElementNode:
 		// Determine the Markdown type
 		markdownElem := c.htmlNodeToMarkdownElement(node)
@@ -131,7 +135,7 @@ func (c *Converter) convertNode(node *html.Node, output *outputWriter) {
 				// stack underflow
 				panic("no items in listStack to pop for the last li tag")
 			}
-			output.WriteString("\n")  // write an extra newline when the list ends
+			output.WriteString("\n") // write an extra newline when the list ends
 		}
 	}
 }

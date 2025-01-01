@@ -68,6 +68,11 @@ func TestConvertString(t *testing.T) {
 			expected: "- Item 1\n\t- Subitem 1\n\n- Item 2\n\n",
 		},
 		{
+			name: "Orphan List Items",
+			input: `<li>hello</li><li>world</li>`,
+			expected: "- hello\n- world\n\n",
+		},
+		{
 			name:     "Hyperlink",
 			input:    `<p>Visit <a href="https://example.com">example</a>.</p>`,
 			expected: "Visit [example](https://example.com).\n\n",
@@ -143,8 +148,8 @@ ananke can read.
 		},
 		{
 			name:     "Nested Blockquote",
-			input:    `<blockquote><p>This is a nested blockquote.</p><blockquote>And this is another level.</blockquote></blockquote>`,
-			expected: "> This is a nested blockquote.\n>\n> > And this is another level.\n\n",
+			input:    `<blockquote><p>This is a nested blockquote.</p><p>Are you kidding me?</p><blockquote>And this is another level.</blockquote></blockquote>`,
+			expected: "> This is a nested blockquote.\n>\n> Are you kidding me?\n>\n> > And this is another level.\n\n",
 		},
 	}
 
@@ -153,7 +158,7 @@ ananke can read.
 			converter := NewConverter()
 			output, err := converter.ConvertString(test.input)
 			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				t.Errorf("unexpected error: %v", err)
 			}
 
 			if output != test.expected {
