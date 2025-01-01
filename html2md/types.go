@@ -21,6 +21,8 @@ const (
 	Image
 	List // can be ordered as well unordered
 	ListItem
+	Blockquote
+	InlineCode
 	Unknown
 )
 
@@ -150,9 +152,7 @@ func NewItalicTag() *ItalicTag {
 	return &ItalicTag{}
 }
 
-// todo strikethrough tag
-// todo blockquote tag
-// todo code tag
+// todo strikethrough tag (GFM)
 
 type ParagraphTag struct{}
 
@@ -255,6 +255,36 @@ func (li ListItemTag) EndCode() string {
 func NewListItemTag(depth int, type_ ListOrdering, number int) *ListItemTag {
 	return &ListItemTag{depth: depth, type_: type_, number: number}
 }
+
+type BlockquoteTag struct {}
+func (bl BlockquoteTag) Type() MarkdownElementType {
+	return Blockquote
+}
+func (bl BlockquoteTag) StartCode() string {
+	return "> "
+}
+func (bl BlockquoteTag) EndCode() string {
+	return "\n\n"
+}
+func NewBlockquoteTag() *BlockquoteTag {
+	return &BlockquoteTag{}
+}
+
+type InlineCodeTag struct{}
+
+func (ic InlineCodeTag) Type() MarkdownElementType {
+	return InlineCode
+}
+func (ic InlineCodeTag) StartCode() string {
+	return "`"
+}
+func (ic InlineCodeTag) EndCode() string {
+	return "`"
+}
+func NewInlineCodeTag() *InlineCodeTag {
+	return &InlineCodeTag{}
+}
+
 
 type UnknownTag struct {
 	data string

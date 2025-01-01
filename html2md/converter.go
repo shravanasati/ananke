@@ -10,11 +10,12 @@ type Converter struct {
 	// todo add options
 	listStack *stack[*listEntry]
 	processed map[string]bool
+	output    *outputWriter
 }
 
 func NewConverter() *Converter {
 	stack := newStack[*listEntry]()
-	return &Converter{listStack: stack, processed: map[string]bool{}}
+	return &Converter{listStack: stack, processed: map[string]bool{}, output: newOutputWriter()}
 }
 
 // performs a linear search for the given attribute in a html node
@@ -101,32 +102,40 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		}
 		return NewListItemTag(depth, topmost.type_, number)
 
+	case "blockquote":
+		// todo indent all children with `>`
+		return NewBlockquoteTag()
+
+	case "code":
+		// todo determine when to use inline vs fenced code block
+		return NewInlineCodeTag()
+
 	default:
 		return NewUnknownTag(node.Data)
 	}
 }
 
-func (c *Converter) convertNode(node *html.Node, output *outputWriter) {
+func (c *Converter) convertNode(node *html.Node) {
 	switch node.Type {
 	case html.TextNode:
 		// Write the text content, escaping special Markdown characters
-		output.WriteString((escapeMarkdown(node.Data)))
+		c.output.WriteString(escapeMarkdown(node.Data))
 
 	case html.ElementNode:
 		// Determine the Markdown type
 		markdownElem := c.htmlNodeToMarkdownElement(node)
 
 		// Write opening Markdown syntax
-		output.WriteString(markdownElem.StartCode())
+		c.output.WriteString(markdownElem.StartCode())
 
 		// Recursively process child nodes
 		for child := range node.ChildNodes() {
-			c.convertNode(child, output)
+			c.convertNode(child)
 		}
 
 		// Write closing Markdown syntax
 		endCode := markdownElem.EndCode()
-		output.WriteString(endCode)
+		c.output.WriteString(endCode)
 
 		if markdownElem.Type() == ListItem && node.NextSibling == nil {
 			// last li tag in a list
@@ -135,14 +144,12 @@ func (c *Converter) convertNode(node *html.Node, output *outputWriter) {
 				// stack underflow
 				panic("no items in listStack to pop for the last li tag")
 			}
-			output.WriteString("\n") // write an extra newline when the list ends
+			c.output.WriteString("\n") // write an extra newline when the list ends
 		}
 	}
 }
 
 func (c *Converter) ConvertString(input string) (string, error) {
-	output := newOutputWriter()
-
 	// Parse the HTML input into a document tree
 	doc, err := html.Parse(strings.NewReader(input))
 	if err != nil {
@@ -151,10 +158,10 @@ func (c *Converter) ConvertString(input string) (string, error) {
 
 	// Start recursive conversion from the root node's children
 	for node := doc.FirstChild; node != nil; node = node.NextSibling {
-		c.convertNode(node, output)
+		c.convertNode(node)
 	}
 
-	return output.String(), nil
+	return c.output.String(), nil
 }
 
 func escapeMarkdown(text string) string {
