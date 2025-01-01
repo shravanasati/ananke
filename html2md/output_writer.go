@@ -20,8 +20,8 @@ func newOutputWriter() *outputWriter {
 	}
 }
 
-// countPrefixNewlines counts the number of leading newlines in a string.
-func countPrefixNewlines(s string) int {
+// countLeadingNewlines counts the number of leading newlines in a string.
+func countLeadingNewlines(s string) int {
 	count := 0
 	for i := 0; i < len(s); i++ {
 		if s[i] != '\n' {
@@ -49,9 +49,10 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 	if s == "" {
 		return 0, nil
 	}
-	prefixNewlines := countPrefixNewlines(s)
+	// fmt.Println("writing:", strings.ReplaceAll(s, "\n", "<newline>"))
+	leadingNewlines := countLeadingNewlines(s)
 
-	totalNewlines := w.trailingNewlines + prefixNewlines
+	totalNewlines := w.trailingNewlines + leadingNewlines
 
 	if totalNewlines > 2 {
 		trimPrefix := totalNewlines - 2

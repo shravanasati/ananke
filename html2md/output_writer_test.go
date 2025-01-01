@@ -17,6 +17,10 @@ func TestOutputWriter(t *testing.T) {
 			inputs:   []string{"- ", "Item 1", "\n", " - Subitem 1", "\n", "\n", "\n", "- Item 2", "\n\n"},
 			expected: "- Item 1\n - Subitem 1\n\n- Item 2\n\n",
 		},
+		{
+			inputs: []string{"# ananke", "\n", "\n\n", "A HTML to markdown converter. ", "Powered by [h]\n", "### Usage", "\n", "\n\n", "can read input from stdin"},
+			expected: "# ananke\n\nA HTML to markdown converter. Powered by [h]\n### Usage\n\ncan read input from stdin",
+		},
 	}
 
 	for _, tc := range testCases {

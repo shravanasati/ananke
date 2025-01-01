@@ -24,3 +24,5 @@ func main() {
 ```
 
 The converter is **NOT thread-safe** and must be used **exactly once** for each input. 
+
+The caller should ensure that the input is UTF-8 encoded.

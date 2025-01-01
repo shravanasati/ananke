@@ -86,6 +86,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	case "li":
 		topmost, err := c.listStack.top()
 		if err != nil {
+			// todo add an unordered list in the stack
 			panic("li tag without parent ol/ul tag")
 		}
 		depth := c.listStack.size() - 1

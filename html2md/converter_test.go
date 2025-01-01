@@ -109,6 +109,43 @@ Line 3](/post)`,
 			input:    `<h1>Gallery</h1><p>Check this out: <img src="https://example.com/cat.png" alt="A cat" /></p><img src="https://example.com/dog.png" />`,
 			expected: "# Gallery\nCheck this out: ![A cat](https://example.com/cat.png)\n\n![image](https://example.com/dog.png)\n",
 		},
+		{
+			name: "README",
+			input: `<h1>ananke</h1>
+
+<p>
+A HTML to markdown converter.
+
+Powered by <a href="https://github.com/shravanasati/ananke/tree/master/html2md">html2md</a>.
+</p>
+
+<h3>Usage</h3>
+<p>
+ananke can read.
+</p>
+`,
+			expected: "# ananke\n\nA HTML to markdown converter.\n\nPowered by [html2md](https://github.com/shravanasati/ananke/tree/master/html2md).\n\n### Usage\n\nananke can read.\n\n",
+		},
+		{
+			name:     "Code Block",
+			input:    `<pre><code>fmt.Println("Hello, World!")</code></pre>`,
+			expected: "```\nfmt.Println(\"Hello, World!\")\n```\n",
+		},
+		{
+			name:     "Inline Code",
+			input:    `<p>This is an example of <code>inline code</code> in a paragraph.</p>`,
+			expected: "This is an example of `inline code` in a paragraph.\n\n",
+		},
+		{
+			name:     "Blockquote",
+			input:    `<blockquote>This is a blockquote.</blockquote>`,
+			expected: "> This is a blockquote.\n\n",
+		},
+		{
+			name:     "Nested Blockquote",
+			input:    `<blockquote><p>This is a nested blockquote.</p><blockquote>And this is another level.</blockquote></blockquote>`,
+			expected: "> This is a nested blockquote.\n>\n> > And this is another level.\n\n",
+		},
 	}
 
 	for _, test := range tests {

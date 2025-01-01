@@ -1,13 +1,19 @@
-<h1>ananke</h1>
+# ananke
 
-<p>
+
+
+
+
 A HTML to markdown converter.
 
-Powered by <a href="https://github.com/shravanasati/ananke/tree/master/html2md">html2md</a>.
-</p>
+Powered by [html2md](https://github.com/shravanasati/ananke/tree/master/html2md).
 
-<h3>Usage</h3>
 
-<p>
+### Usage
+
+
+
+
+
 ananke can read input from STDIN as well as from the arguments passed to it. If multiple arguments are passed, they are concatenated.
-</p>
+
