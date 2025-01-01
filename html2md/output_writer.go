@@ -9,6 +9,7 @@ import (
 type outputWriter struct {
 	writer           *strings.Builder
 	trailingNewlines int
+	blockquoteCount  int
 }
 
 // newOutputWriter creates a new instance of outputWriter.
@@ -17,7 +18,19 @@ func newOutputWriter() *outputWriter {
 	return &outputWriter{
 		writer:           writer,
 		trailingNewlines: 0,
+		blockquoteCount:  0,
 	}
+}
+
+func (w *outputWriter) addBlockquote() {
+	w.blockquoteCount++
+}
+
+func (w *outputWriter) removeBlockquote() {
+	if w.blockquoteCount == 0 {
+		panic("remove blockquote called with 0 blockquoteCount")
+	}
+	w.blockquoteCount--
 }
 
 // countLeadingNewlines counts the number of leading newlines in a string.
@@ -71,6 +84,10 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 		w.trailingNewlines = trailingNewlines
 	} else {
 		w.trailingNewlines += trailingNewlines
+	}
+
+	if w.blockquoteCount > 0 {
+		s = strings.ReplaceAll(s, "\n", "\n" + strings.Repeat("> ", w.blockquoteCount))
 	}
 
 	return w.writer.WriteString(s)

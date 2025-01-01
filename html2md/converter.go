@@ -103,7 +103,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		return NewListItemTag(depth, topmost.type_, number)
 
 	case "blockquote":
-		// todo indent all children with `>`
+		c.output.addBlockquote()
 		return NewBlockquoteTag()
 
 	case "code":
@@ -135,6 +135,11 @@ func (c *Converter) convertNode(node *html.Node) {
 
 		// Write closing Markdown syntax
 		endCode := markdownElem.EndCode()
+		if markdownElem.Type() == Blockquote {
+			// doing this before writing the endcode of blockquote
+			// to prevent `>` in trailing newlines
+			c.output.removeBlockquote()
+		}
 		c.output.WriteString(endCode)
 
 		if markdownElem.Type() == ListItem && node.NextSibling == nil {
@@ -146,6 +151,7 @@ func (c *Converter) convertNode(node *html.Node) {
 			}
 			c.output.WriteString("\n") // write an extra newline when the list ends
 		}
+
 	}
 }
 

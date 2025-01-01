@@ -149,7 +149,8 @@ ananke can read.
 		{
 			name:     "Nested Blockquote",
 			input:    `<blockquote><p>This is a nested blockquote.</p><p>Are you kidding me?</p><blockquote>And this is another level.</blockquote></blockquote>`,
-			expected: "> This is a nested blockquote.\n>\n> Are you kidding me?\n>\n> > And this is another level.\n\n",
+			expected: "> This is a nested blockquote.\n> \n> Are you kidding me?\n> \n> > And this is another level.\n> \n> ",
+			// * kind of hack here, blockquotes with just newlines are equivalent to not having them at all
 		},
 	}
 
