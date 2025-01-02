@@ -50,4 +50,8 @@ by someone
 
 `` `variable` ``
 
-`` `hello` `` `hello`
+`` `hello` `` ` hello `
+
+This is an example of `` inline code `` in a paragraph.
+
+This is an example of `inline code` in a paragraph.

@@ -140,7 +140,7 @@ ananke can read.
 		{
 			name:     "Inline Code",
 			input:    `<p>This is an example of <code>inline code</code> in a paragraph.</p>`,
-			expected: "This is an example of `inline code` in a paragraph.\n\n",
+			expected: "This is an example of `` inline code `` in a paragraph.\n\n",
 		},
 		{
 			name:     "Blockquote",
@@ -208,12 +208,12 @@ ananke can read.
 		{
 			name:     "Inline Code",
 			input:    `<p>Output a message: <br/><code>console.log("hello")</code></p>`,
-			expected: "Output a message:   \n`console.log(\"hello\")`\n\n",
+			expected: "Output a message:   \n`` console.log(\"hello\") ``\n\n",
 		},
 		{
 			name:     "Code with Backticks",
 			input:    "<code>with `` backticks</code>",
-			expected: "`` `with `` backticks` ``",
+			expected: "`` with `` backticks ``",
 		},
 		{
 			name:     "Variable in Backticks",

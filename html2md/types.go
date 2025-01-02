@@ -285,10 +285,10 @@ func (ic InlineCodeTag) Type() MarkdownElementType {
 	return InlineCode
 }
 func (ic InlineCodeTag) StartCode() string {
-	return "`"
+	return "`` "
 }
 func (ic InlineCodeTag) EndCode() string {
-	return "`"
+	return " ``"
 }
 func NewInlineCodeTag() *InlineCodeTag {
 	return &InlineCodeTag{}
