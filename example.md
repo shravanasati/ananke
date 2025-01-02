@@ -1,34 +1,40 @@
-<h1>🌕 ananke</h1>
+# 🌕 ananke
 
-<p>
-A HTML to markdown converter. This README.md is generated from the <a href="https://github.com/shravanasati/ananke/blob/master/README.html">README.html</a> file using ananke.
+A HTML to markdown converter. This README.md is generated from the [README.html](https://github.com/shravanasati/ananke/blob/master/README.html) file using ananke.
 
-Powered by <a href="https://github.com/shravanasati/ananke/tree/master/html2md">html2md</a>.
-</p>
+Powered by [html2md](https://github.com/shravanasati/ananke/tree/master/html2md).
 
-<h3>Usage</h3>
-<p>
+### Usage
+
 ananke can read input from STDIN as well as from the arguments passed to it. If multiple arguments are passed, they are concatenated.
-</p>
 
-<p>
 Read a HTML file and print the Markdown output:
-<pre><code class="language-sh">
+
+```sh
+
 cat index.html | ananke
-</code></pre>
+
+```
 
 Read a HTML file and write a new Markdown file:
-<pre><code class="language-sh">
+```sh
+
 cat index.html | ananke > index.md
-</code></pre>
+
+```
 
 Read a HTML file, print the output as well as write it to a file:
-<pre><code class="language-sh">
+```sh
+
 cat index.html | ananke | tee /dev/tty index.md
-</code></pre>
+
+```
 
 Read HTML from a URL and print the output:
-<pre><code class="language-sh">
+```sh
+
 curl --no-progress-meter -L https://wikipedia.org/wiki/Anime | ananke
-</code></pre>
-</p>
+
+```
+
+
