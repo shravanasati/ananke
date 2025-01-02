@@ -16,7 +16,7 @@ visit "https://github.com/shravanasati/ananke".. for more information.
 `
 
 func main() {
-	converter:= html2md.NewConverter()
+	converter := html2md.NewConverter()
 
 	// Check if there is any input available in stdin
 	stat, _ := os.Stdin.Stat()

@@ -27,7 +27,7 @@ func newListEntry(type_ ListOrdering) *listEntry {
 // * This is because while processing lists, for each li tag, its parent ol/ul tag
 // * would also appear in the traversal. The code written previously assumed
 // * that ol/ul would appear only once. To encounter this incorrect assumption,
-// * the converter keeps a track of list tags it has seen. Thus, even if it appears 
+// * the converter keeps a track of list tags it has seen. Thus, even if it appears
 // * again, the converter would just ignore it and NOT add it to the list stack.
 
 // Generate a fingerprint for an HTML node

@@ -37,7 +37,7 @@ func (s *stack[T]) top() (T, error) {
 	if s.size() == 0 {
 		return value, errStackUnderflow
 	}
-	value = s.elems[s.size() - 1]
+	value = s.elems[s.size()-1]
 	return value, nil
 }
 

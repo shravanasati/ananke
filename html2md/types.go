@@ -23,6 +23,8 @@ const (
 	ListItem
 	Blockquote
 	InlineCode
+	Pre
+	FencedCode
 	Unknown
 )
 
@@ -153,6 +155,8 @@ func NewItalicTag() *ItalicTag {
 }
 
 // todo strikethrough tag (GFM)
+// todo hr
+// todo br
 
 type ParagraphTag struct{}
 
@@ -256,7 +260,8 @@ func NewListItemTag(depth int, type_ ListOrdering, number int) *ListItemTag {
 	return &ListItemTag{depth: depth, type_: type_, number: number}
 }
 
-type BlockquoteTag struct {}
+type BlockquoteTag struct{}
+
 func (bl BlockquoteTag) Type() MarkdownElementType {
 	return Blockquote
 }
@@ -285,6 +290,33 @@ func NewInlineCodeTag() *InlineCodeTag {
 	return &InlineCodeTag{}
 }
 
+type FencedCodeTag struct {
+	language string
+}
+
+func (fc FencedCodeTag) Type() MarkdownElementType {
+	return FencedCode
+}
+func (fc FencedCodeTag) StartCode() string {
+	return "```" + fc.language + "\n"
+}
+func (fc FencedCodeTag) EndCode() string {
+	return "\n```\n"
+}
+func NewFencedCodeTag(language string) *FencedCodeTag {
+	return &FencedCodeTag{language: language}
+}
+
+type PreTag struct{}
+
+func (p PreTag) Type() MarkdownElementType {
+	return Pre
+}
+func (p PreTag) StartCode() string { return "" }
+func (p PreTag) EndCode() string   { return "" }
+func NewPreTag() *PreTag {
+	return &PreTag{}
+}
 
 type UnknownTag struct {
 	data string

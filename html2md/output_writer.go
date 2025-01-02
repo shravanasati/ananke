@@ -87,7 +87,7 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 	}
 
 	if w.blockquoteCount > 0 {
-		s = strings.ReplaceAll(s, "\n", "\n" + strings.Repeat("> ", w.blockquoteCount))
+		s = strings.ReplaceAll(s, "\n", "\n"+strings.Repeat("> ", w.blockquoteCount))
 	}
 
 	return w.writer.WriteString(s)

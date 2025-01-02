@@ -68,8 +68,8 @@ func TestConvertString(t *testing.T) {
 			expected: "- Item 1\n\t- Subitem 1\n\n- Item 2\n\n",
 		},
 		{
-			name: "Orphan List Items",
-			input: `<li>hello</li><li>world</li>`,
+			name:     "Orphan List Items",
+			input:    `<li>hello</li><li>world</li>`,
 			expected: "- hello\n- world\n\n",
 		},
 		{

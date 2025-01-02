@@ -1,21 +1,30 @@
 package html2md
 
 import (
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
+var languageRegex = regexp.MustCompile(`language-(\w+)`)
+
 type Converter struct {
 	// todo add options
-	listStack *stack[*listEntry]
-	processed map[string]bool
-	output    *outputWriter
+	listStack   *stack[*listEntry]
+	processed   map[string]bool
+	preTagCount int
+	output      *outputWriter
 }
 
 func NewConverter() *Converter {
 	stack := newStack[*listEntry]()
-	return &Converter{listStack: stack, processed: map[string]bool{}, output: newOutputWriter()}
+	return &Converter{
+		listStack:   stack,
+		processed:   map[string]bool{},
+		preTagCount: 0,
+		output:      newOutputWriter(),
+	}
 }
 
 // performs a linear search for the given attribute in a html node
@@ -27,6 +36,20 @@ func findAttribute(node *html.Node, key string) string {
 	}
 
 	return ""
+}
+
+func findCodeLanguage(node *html.Node) string {
+	if node.Type != html.ElementNode && node.Data != "code" {
+		panic("attempt to find language in a non-code tag")
+	}
+
+	classList := findAttribute(node, "class")
+	matches := languageRegex.FindStringSubmatch(classList)
+	if len(matches) < 2 {
+		return ""
+	}
+
+	return matches[1]
 }
 
 func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
@@ -106,9 +129,19 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		c.output.addBlockquote()
 		return NewBlockquoteTag()
 
+	case "pre":
+		c.preTagCount++
+		return NewPreTag()
+
 	case "code":
-		// todo determine when to use inline vs fenced code block
-		return NewInlineCodeTag()
+		// use fenced code block when inside a `pre` tag
+		// similar implementation to list stacks
+		// for fenced code blocks, language is important too
+		if c.preTagCount == 0 {
+			return NewInlineCodeTag()
+		}
+		language := findCodeLanguage(node)
+		return NewFencedCodeTag(language)
 
 	default:
 		return NewUnknownTag(node.Data)
@@ -119,7 +152,12 @@ func (c *Converter) convertNode(node *html.Node) {
 	switch node.Type {
 	case html.TextNode:
 		// Write the text content, escaping special Markdown characters
-		c.output.WriteString(escapeMarkdown(node.Data))
+		// * dont escape when inside a pre or fenced code tag
+		text := node.Data
+		if c.preTagCount == 0 {
+			text = escapeMarkdown(text)
+		}
+		c.output.WriteString(text)
 
 	case html.ElementNode:
 		// Determine the Markdown type
@@ -141,6 +179,10 @@ func (c *Converter) convertNode(node *html.Node) {
 			c.output.removeBlockquote()
 		}
 		c.output.WriteString(endCode)
+
+		if markdownElem.Type() == Pre {
+			c.preTagCount--
+		}
 
 		if markdownElem.Type() == ListItem && node.NextSibling == nil {
 			// last li tag in a list
