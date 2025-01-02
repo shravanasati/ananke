@@ -76,6 +76,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 
 	case "a":
 		href := findAttribute(node, "href")
+		c.output.insideAnchor = true
 		return NewAnchorTag(href)
 
 	case "img":
@@ -188,6 +189,10 @@ func (c *Converter) convertNode(node *html.Node) {
 
 		if markdownElem.Type() == Pre {
 			c.preTagCount--
+		}
+
+		if markdownElem.Type() == Anchor {
+			c.output.insideAnchor = false
 		}
 
 		if markdownElem.Type() == ListItem && node.NextSibling == nil {

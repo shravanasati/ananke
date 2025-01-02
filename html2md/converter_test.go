@@ -78,14 +78,14 @@ func TestConvertString(t *testing.T) {
 			expected: "Visit [example](https://example.com).\n\n",
 		},
 		{
-			name: "Complex hyperlink",
+			name: "Hyperlink with line breaks and formatting",
 			input: `<a href="/post">Line 1<br/>
 <strong>Line 2</strong><br/>
 Line 3
 </a>`,
-			expected: `[Line 1
+			expected: `[Line 1  
 \
-**Line 2**
+**Line 2**  
 \
 Line 3
 ](/post)`,
@@ -183,6 +183,54 @@ ananke can read.
 			input:    `<hr /><hr /><p>After multiple lines</p>`,
 			expected: "---\n\n---\n\nAfter multiple lines\n\n",
 		},
+		{
+			name:     "Nested list with blockquote",
+			input:    `<ul><li>Simple List</li><li><p>Someone once said:</p><blockquote>My famous quote</blockquote><span>by someone</span></li></ul>`,
+			expected: "- Simple List\n- Someone once said:\n\n > My famous quote\n\nby someone",
+		},
+		{
+			name:     "Ordered list with start",
+			input:    `<ol start="9"><li>Nine</li><li>Ten</li><li>Eleven<ul><li>Nested</li></ul></li></ol>`,
+			expected: "9. Nine\n10. Ten\n11. Eleven\n\t- Nested",
+		},
+		{
+			name:  "Blockquote with Heading, Ordered List, and Nested Blockquote",
+			input: `<blockquote><h2>Heading</h2><ol><li>List</li><li>List</li></ol><blockquote><p>Another Quote</p><p>by someone</p></blockquote></blockquote>`,
+			expected: `> ## Heading
+> 1. List
+> 2. List
+> 
+> > Another Quote
+> >
+> > by someone
+`,
+		},
+		{
+			name:     "Inline Code",
+			input:    `<p>Output a message: <br/><code>console.log("hello")</code></p>`,
+			expected: "Output a message:\n`console.log(\"hello\")`\n\n",
+		},
+		{
+			name:     "Code with Backticks",
+			input:    "<code>with `` backticks</code>",
+			expected: "`` `with `` backticks` ``\n",
+		},
+		{
+			name:     "Variable in Backticks",
+			input:    "<code>`variable`</code>",
+			expected: "` `variable` ``\n",
+		},
+		{
+			name:     "Code Block with Language Tag",
+			input:    `<pre><code class="language-js">This ` + "``\ntotally ``` works!\n" + `</code></pre>`,
+			expected: "```js\nThis ``\ntotally ``` works!\n```\n",
+		},
+		{
+			name:     "link with title attribute",
+			input:    `<a href="/about.html" title="title text">About</a>`,
+			expected: `[About](/about.html "title text")`,
+		},
+		
 	}
 
 	for _, test := range tests {

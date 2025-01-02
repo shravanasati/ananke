@@ -10,6 +10,7 @@ type outputWriter struct {
 	writer           *strings.Builder
 	trailingNewlines int
 	blockquoteCount  int
+	insideAnchor     bool // this is not a count because nested anchors are invalid in html
 }
 
 // newOutputWriter creates a new instance of outputWriter.
@@ -19,6 +20,7 @@ func newOutputWriter() *outputWriter {
 		writer:           writer,
 		trailingNewlines: 0,
 		blockquoteCount:  0,
+		insideAnchor:     false,
 	}
 }
 
@@ -88,6 +90,10 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 
 	if w.blockquoteCount > 0 {
 		s = strings.ReplaceAll(s, "\n", "\n"+strings.Repeat("> ", w.blockquoteCount))
+	}
+
+	if w.insideAnchor && w.trailingNewlines == 1 {
+		s = strings.ReplaceAll(s, "\n", "\n\\")
 	}
 
 	return w.writer.WriteString(s)
