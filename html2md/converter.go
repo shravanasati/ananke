@@ -76,8 +76,9 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 
 	case "a":
 		href := findAttribute(node, "href")
+		title := findAttribute(node, "title")
 		c.output.insideAnchor = true
-		return NewAnchorTag(href)
+		return NewAnchorTag(href, title)
 
 	case "img":
 		src := findAttribute(node, "src")

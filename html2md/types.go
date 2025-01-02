@@ -174,7 +174,8 @@ func NewParagraphTag() *ParagraphTag {
 }
 
 type AnchorTag struct {
-	href string
+	href  string
+	title string
 }
 
 func (a AnchorTag) Type() MarkdownElementType {
@@ -184,10 +185,13 @@ func (a AnchorTag) StartCode() string {
 	return "["
 }
 func (a AnchorTag) EndCode() string {
+	if a.title != "" {
+		return fmt.Sprintf("](%v \"%v\")", a.href, a.title)
+	}
 	return fmt.Sprintf("](%v)", a.href)
 }
-func NewAnchorTag(href string) *AnchorTag {
-	return &AnchorTag{href: href}
+func NewAnchorTag(href, title string) *AnchorTag {
+	return &AnchorTag{href: href, title: title}
 }
 
 type ImageTag struct {

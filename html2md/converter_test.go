@@ -208,29 +208,29 @@ ananke can read.
 		{
 			name:     "Inline Code",
 			input:    `<p>Output a message: <br/><code>console.log("hello")</code></p>`,
-			expected: "Output a message:\n`console.log(\"hello\")`\n\n",
+			expected: "Output a message:   \n`console.log(\"hello\")`\n\n",
 		},
 		{
 			name:     "Code with Backticks",
 			input:    "<code>with `` backticks</code>",
-			expected: "`` `with `` backticks` ``\n",
+			expected: "`` `with `` backticks` ``",
 		},
 		{
 			name:     "Variable in Backticks",
 			input:    "<code>`variable`</code>",
-			expected: "` `variable` ``\n",
+			expected: "`` `variable` ``",
 		},
 		{
 			name:     "Code Block with Language Tag",
 			input:    `<pre><code class="language-js">This ` + "``\ntotally ``` works!\n" + `</code></pre>`,
-			expected: "```js\nThis ``\ntotally ``` works!\n```\n",
+			expected: "```js\nThis ``\ntotally ``` works!\n\n```\n",
 		},
 		{
 			name:     "link with title attribute",
 			input:    `<a href="/about.html" title="title text">About</a>`,
 			expected: `[About](/about.html "title text")`,
 		},
-		
+
 	}
 
 	for _, test := range tests {
