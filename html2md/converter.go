@@ -11,19 +11,21 @@ var languageRegex = regexp.MustCompile(`language-(\w+)`)
 
 type Converter struct {
 	// todo add options
-	listStack   *stack[*listEntry]
-	processed   map[string]bool
-	preTagCount int
-	output      *outputWriter
+	listStack    *stack[*listEntry]
+	processed    map[string]bool
+	preTagCount  int
+	output       *outputWriter
+	codeTagCount int
 }
 
 func NewConverter() *Converter {
 	stack := newStack[*listEntry]()
 	return &Converter{
-		listStack:   stack,
-		processed:   map[string]bool{},
-		preTagCount: 0,
-		output:      newOutputWriter(),
+		listStack:    stack,
+		processed:    map[string]bool{},
+		preTagCount:  0,
+		codeTagCount: 0,
+		output:       newOutputWriter(),
 	}
 }
 
@@ -139,6 +141,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		// use fenced code block when inside a `pre` tag
 		// similar implementation to list stacks
 		// for fenced code blocks, language is important too
+		c.codeTagCount++
 		if c.preTagCount == 0 {
 			return NewInlineCodeTag()
 		}
@@ -162,7 +165,7 @@ func (c *Converter) convertNode(node *html.Node) {
 		// Write the text content, escaping special Markdown characters
 		// * dont escape when inside a pre or fenced code tag
 		text := node.Data
-		if c.preTagCount == 0 {
+		if c.codeTagCount == 0 {
 			text = escapeMarkdown(text)
 		}
 		c.output.WriteString(text)
@@ -190,13 +193,11 @@ func (c *Converter) convertNode(node *html.Node) {
 
 		if markdownElem.Type() == Pre {
 			c.preTagCount--
-		}
-
-		if markdownElem.Type() == Anchor {
+		} else if markdownElem.Type() == InlineCode || markdownElem.Type() == FencedCode {
+			c.codeTagCount--
+		} else if markdownElem.Type() == Anchor {
 			c.output.insideAnchor = false
-		}
-
-		if markdownElem.Type() == ListItem && node.NextSibling == nil {
+		} else if markdownElem.Type() == ListItem && node.NextSibling == nil {
 			// last li tag in a list
 			_, err := c.listStack.pop()
 			if err != nil {
