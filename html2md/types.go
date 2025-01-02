@@ -25,6 +25,8 @@ const (
 	InlineCode
 	Pre
 	FencedCode
+	BR
+	HR
 	Unknown
 )
 
@@ -155,8 +157,6 @@ func NewItalicTag() *ItalicTag {
 }
 
 // todo strikethrough tag (GFM)
-// todo hr
-// todo br
 
 type ParagraphTag struct{}
 
@@ -316,6 +316,28 @@ func (p PreTag) StartCode() string { return "" }
 func (p PreTag) EndCode() string   { return "" }
 func NewPreTag() *PreTag {
 	return &PreTag{}
+}
+
+type BRTag struct{}
+
+func (p BRTag) Type() MarkdownElementType {
+	return BR
+}
+func (p BRTag) StartCode() string { return "  \n" }
+func (p BRTag) EndCode() string   { return "" }
+func NewBRTag() *BRTag {
+	return &BRTag{}
+}
+
+type HRTag struct{}
+
+func (p HRTag) Type() MarkdownElementType {
+	return HR
+}
+func (p HRTag) StartCode() string { return "---\n\n" }
+func (p HRTag) EndCode() string   { return "" }
+func NewHRTag() *HRTag {
+	return &HRTag{}
 }
 
 type UnknownTag struct {

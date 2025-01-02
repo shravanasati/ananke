@@ -143,6 +143,12 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		language := findCodeLanguage(node)
 		return NewFencedCodeTag(language)
 
+	case "br":
+		return NewBRTag()
+
+	case "hr":
+		return NewHRTag()
+
 	default:
 		return NewUnknownTag(node.Data)
 	}

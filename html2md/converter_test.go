@@ -79,15 +79,16 @@ func TestConvertString(t *testing.T) {
 		},
 		{
 			name: "Complex hyperlink",
-			input: `<a href="/post">Line 1 <br/>
-<strong>Line 2</strong> <br/>
-Line 3 <br/>
+			input: `<a href="/post">Line 1<br/>
+<strong>Line 2</strong><br/>
+Line 3
 </a>`,
 			expected: `[Line 1
 \
 **Line 2**
 \
-Line 3](/post)`,
+Line 3
+](/post)`,
 		},
 		{
 			name:     "Complex Document",
@@ -151,6 +152,36 @@ ananke can read.
 			input:    `<blockquote><p>This is a nested blockquote.</p><p>Are you kidding me?</p><blockquote>And this is another level.</blockquote></blockquote>`,
 			expected: "> This is a nested blockquote.\n> \n> Are you kidding me?\n> \n> > And this is another level.\n> \n> ",
 			// * kind of hack here, blockquotes with just newlines are equivalent to not having them at all
+		},
+		{
+			name:     "Single Line Break",
+			input:    `<p>First line<br>Second line</p>`,
+			expected: "First line  \nSecond line\n\n",
+		},
+		{
+			name:     "Multiple Line Breaks",
+			input:    `<p>First line<br><br>Second line</p>`,
+			expected: "First line  \n  \nSecond line\n\n",
+		},
+		{
+			name:     "Line Break Between Tags",
+			input:    `<p>First line</p><br><p>Second line</p>`,
+			expected: "First line\n\n  \nSecond line\n\n",
+		},
+		{
+			name:     "Horizontal Rule",
+			input:    `<p>Before the line</p><hr /><p>After the line</p>`,
+			expected: "Before the line\n\n---\n\nAfter the line\n\n",
+		},
+		{
+			name:     "Standalone Horizontal Rule",
+			input:    `<hr />`,
+			expected: "---\n\n",
+		},
+		{
+			name:     "Multiple Horizontal Rules",
+			input:    `<hr /><hr /><p>After multiple lines</p>`,
+			expected: "---\n\n---\n\nAfter multiple lines\n\n",
 		},
 	}
 
