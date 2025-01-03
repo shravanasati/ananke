@@ -95,7 +95,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		fingerprint := generateFingerprint(node)
 		if _, ok := c.processed[fingerprint]; !ok {
 			// this tag has not been processed before
-			c.listStack.push(newListEntry(UnorderedList, 0))
+			c.listStack.push(newUnorderedListEntry())
 			c.processed[fingerprint] = true
 			depth := c.listStack.size() - 1
 			return NewListTag(UnorderedList, depth)
@@ -105,6 +105,9 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		fingerprint := generateFingerprint(node)
 		if _, ok := c.processed[fingerprint]; !ok {
 			// this tag has not been processed before
+			type_ := findAttribute(node, "type")
+			cType, case_ := getOrderedListParams(type_)
+
 			start := findAttribute(node, "start")
 			if start == "" {
 				start = "1"
@@ -113,7 +116,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 			if err != nil {
 				startNum = 1
 			}
-			c.listStack.push(newListEntry(OrderedList, startNum))
+			c.listStack.push(newOrderedListEntry(startNum, cType, case_))
 			c.processed[fingerprint] = true
 			depth := c.listStack.size() - 1
 			return NewListTag(OrderedList, depth)
@@ -125,14 +128,14 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		if err != nil {
 			// if list items without a parent ol/ul tags are found,
 			// insert an ul tag in the stack
-			topmost = newListEntry(UnorderedList, 0)
+			topmost = newUnorderedListEntry()
 			c.listStack.push(topmost)
 			// panic("li tag without parent ol/ul tag")
 		}
 		depth := c.listStack.size() - 1
-		var number int
+		var number string
 		if topmost.type_ == UnorderedList {
-			number = 0
+			number = "0"
 		} else {
 			number = topmost.counter.next()
 		}

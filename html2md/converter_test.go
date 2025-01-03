@@ -194,6 +194,32 @@ ananke can read.
 			expected: "9. Nine\n10. Ten\n11. Eleven\n\t- Nested\n\n",
 		},
 		{
+			name:     `Ordered list with type="A"`,
+			input:    `<ol type="A" start="4"><li>First</li><li>Second</li><li>Third</li></ol>`,
+			expected: "D. First\nE. Second\nF. Third\n\n",
+		},
+		{
+			name:     `Ordered list with type="a"`,
+			input:    `<ol type="a"><li>First</li><li>Second</li><li>Third</li></ol>`,
+			expected: "a. First\nb. Second\nc. Third\n\n",
+		},
+		{
+			name:     `Ordered list with type="I"`,
+			input:    `<ol type="I" start="89"><li>First</li><li>Second</li><li>Third</li></ol>`,
+			expected: "LXXXIX. First\nXC. Second\nXCI. Third\n\n",
+		},
+		{
+			name:     `Ordered list with type="i"`,
+			input:    `<ol type="i"><li>First</li><li>Second</li><li>Third</li></ol>`,
+			expected: "i. First\nii. Second\niii. Third\n\n",
+		},
+		{
+			name:     `Ordered list with type="5"`,
+			input:    `<ol type="5"><li>Five</li><li>Six</li><li>Seven</li></ol>`,
+			expected: "1. Five\n2. Six\n3. Seven\n\n",
+		},
+
+		{
 			name:  "Blockquote with Heading, Ordered List, and Nested Blockquote",
 			input: `<blockquote><h2>Heading</h2><ol><li>List</li><li>List</li></ol><blockquote><p>Another Quote</p><p>by someone</p></blockquote></blockquote>`,
 			expected: `> ## Heading
@@ -231,7 +257,6 @@ ananke can read.
 			input:    `<a href="/about.html" title="title text">About</a>`,
 			expected: `[About](/about.html "title text")`,
 		},
-
 	}
 
 	for _, test := range tests {

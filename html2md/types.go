@@ -8,7 +8,7 @@ import (
 type MarkdownElementType int
 
 const (
-	Bold = iota
+	Bold MarkdownElementType = iota
 	Italic
 	H1
 	H2
@@ -215,7 +215,7 @@ func NewImageTag(src, altText string) *ImageTag {
 type ListOrdering uint
 
 const (
-	UnorderedList = iota
+	UnorderedList ListOrdering = iota
 	OrderedList
 )
 
@@ -244,7 +244,7 @@ func NewListTag(type_ ListOrdering, depth int) *ListTag {
 type ListItemTag struct {
 	depth  int
 	type_  ListOrdering
-	number int
+	number string
 }
 
 func (li ListItemTag) Type() MarkdownElementType {
@@ -260,7 +260,7 @@ func (li ListItemTag) StartCode() string {
 func (li ListItemTag) EndCode() string {
 	return "\n"
 }
-func NewListItemTag(depth int, type_ ListOrdering, number int) *ListItemTag {
+func NewListItemTag(depth int, type_ ListOrdering, number string) *ListItemTag {
 	return &ListItemTag{depth: depth, type_: type_, number: number}
 }
 
