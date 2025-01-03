@@ -210,7 +210,7 @@ ananke can read.
 		},
 		{
 			name:     `Ordered list with type="i"`,
-			input:    `<ol type="i"><li>First</li><li>Second</li><li>Third</li></ol>`,
+			input:    `<ol type="i" start="v"><li>First</li><li>Second</li><li>Third</li></ol>`,
 			expected: "i. First\nii. Second\niii. Third\n\n",
 		},
 		{
