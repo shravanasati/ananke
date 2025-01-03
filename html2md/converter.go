@@ -2,6 +2,7 @@ package html2md
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -94,7 +95,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		fingerprint := generateFingerprint(node)
 		if _, ok := c.processed[fingerprint]; !ok {
 			// this tag has not been processed before
-			c.listStack.push(newListEntry(UnorderedList))
+			c.listStack.push(newListEntry(UnorderedList, 0))
 			c.processed[fingerprint] = true
 			depth := c.listStack.size() - 1
 			return NewListTag(UnorderedList, depth)
@@ -104,7 +105,15 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		fingerprint := generateFingerprint(node)
 		if _, ok := c.processed[fingerprint]; !ok {
 			// this tag has not been processed before
-			c.listStack.push(newListEntry(OrderedList))
+			start := findAttribute(node, "start")
+			if start == "" {
+				start = "1"
+			}
+			startNum, err := strconv.Atoi(start)
+			if err != nil {
+				startNum = 1
+			}
+			c.listStack.push(newListEntry(OrderedList, startNum))
 			c.processed[fingerprint] = true
 			depth := c.listStack.size() - 1
 			return NewListTag(OrderedList, depth)
@@ -116,7 +125,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		if err != nil {
 			// if list items without a parent ol/ul tags are found,
 			// insert an ul tag in the stack
-			topmost = newListEntry(UnorderedList)
+			topmost = newListEntry(UnorderedList, 0)
 			c.listStack.push(topmost)
 			// panic("li tag without parent ol/ul tag")
 		}

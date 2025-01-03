@@ -14,10 +14,12 @@ type listEntry struct {
 	counter *counter
 }
 
-func newListEntry(type_ ListOrdering) *listEntry {
+// newListEntry creates and returns a new *listEntry with the given list ordering and start.
+// `start` parameter is relevant only when `type_` is `Ordered`.
+func newListEntry(type_ ListOrdering, start int) *listEntry {
 	entry := &listEntry{type_: type_}
 	if type_ == OrderedList {
-		entry.counter = newCounter(1, 1)
+		entry.counter = newCounter(start, 1)
 	}
 
 	return entry

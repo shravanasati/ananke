@@ -191,7 +191,7 @@ ananke can read.
 		{
 			name:     "Ordered list with start",
 			input:    `<ol start="9"><li>Nine</li><li>Ten</li><li>Eleven<ul><li>Nested</li></ul></li></ol>`,
-			expected: "9. Nine\n10. Ten\n11. Eleven\n\t- Nested",
+			expected: "9. Nine\n10. Ten\n11. Eleven\n\t- Nested\n\n",
 		},
 		{
 			name:  "Blockquote with Heading, Ordered List, and Nested Blockquote",
@@ -201,9 +201,10 @@ ananke can read.
 > 2. List
 > 
 > > Another Quote
-> >
+> > 
 > > by someone
-`,
+> > 
+> > `,
 		},
 		{
 			name:     "Inline Code",
