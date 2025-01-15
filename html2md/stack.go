@@ -1,6 +1,9 @@
 package html2md
 
-import "errors"
+import (
+	"errors"
+	"iter"
+)
 
 var errStackUnderflow = errors.New("cannot pop: number of elements in the stack is 0")
 
@@ -43,4 +46,14 @@ func (s *stack[T]) top() (T, error) {
 
 func (s *stack[T]) size() int {
 	return len(s.elems)
+}
+
+func (s *stack[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for i := len(s.elems) - 1; i >= 0; i-- {
+			if !yield(s.elems[i]) {
+				break
+			}
+		}
+	}
 }

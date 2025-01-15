@@ -2,6 +2,7 @@ package html2md
 
 import (
 	"errors"
+	"slices"
 	"testing"
 )
 
@@ -116,5 +117,20 @@ func TestPushAndPopMultiple(t *testing.T) {
 
 	if stack.size() != 0 {
 		t.Errorf("expected size 0, got %d", stack.size())
+	}
+}
+
+func TestAll(t *testing.T) {
+	s := newStack[int]()
+	elems := []int{3,4,5,6,7}
+	s.push(elems...)
+	
+	slices.Reverse(elems)
+	i := 0
+	for elem := range s.All() {
+		if elem != elems[i] {
+			t.Errorf("expected %v got %v", elems[i], elem)
+		}
+		i++
 	}
 }

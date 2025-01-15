@@ -65,7 +65,7 @@ func TestConvertString(t *testing.T) {
 		{
 			name:     "Nested List",
 			input:    `<ul><li>Item 1<ul><li>Subitem 1</li></ul></li><li>Item 2</li></ul>`,
-			expected: "- Item 1\n\t- Subitem 1\n\n- Item 2\n\n",
+			expected: "- Item 1\n    - Subitem 1\n\n- Item 2\n\n",
 		},
 		{
 			name:     "Orphan List Items",
@@ -191,7 +191,7 @@ ananke can read.
 		{
 			name:     "Ordered list with start",
 			input:    `<ol start="9"><li>Nine</li><li>Ten</li><li>Eleven<ul><li>Nested</li></ul></li></ol>`,
-			expected: "9. Nine\n10. Ten\n11. Eleven\n\t- Nested\n\n",
+			expected: "9. Nine\n10. Ten\n11. Eleven\n    - Nested\n\n",
 		},
 		{
 			name:     `Ordered list with type="A"`,

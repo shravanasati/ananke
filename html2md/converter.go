@@ -80,7 +80,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 	case "a":
 		href := findAttribute(node, "href")
 		title := findAttribute(node, "title")
-		c.output.insideAnchor = true
+		// c.output.addListItemFormatter()
 		return NewAnchorTag(href, title)
 
 	case "img":
@@ -139,10 +139,12 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 		} else {
 			number = topmost.counter.next()
 		}
+		isLastListItem := node.NextSibling == nil
+		c.output.addListItemFormatter(isLastListItem)
 		return NewListItemTag(depth, topmost.type_, number)
 
 	case "blockquote":
-		c.output.addBlockquote()
+		c.output.addBlockquoteFormatter()
 		return NewBlockquoteTag()
 
 	case "pre":
@@ -199,8 +201,11 @@ func (c *Converter) convertNode(node *html.Node) {
 		if markdownElem.Type() == Blockquote {
 			// doing this before writing the endcode of blockquote
 			// to prevent `>` in trailing newlines
-			c.output.removeBlockquote()
+			c.output.popFormatter()
+		} else if markdownElem.Type() == ListItem {
+			c.output.popFormatter()
 		}
+
 		c.output.WriteString(endCode)
 
 		if markdownElem.Type() == Pre {
@@ -208,8 +213,9 @@ func (c *Converter) convertNode(node *html.Node) {
 		} else if markdownElem.Type() == InlineCode || markdownElem.Type() == FencedCode {
 			c.codeTagCount--
 		} else if markdownElem.Type() == Anchor {
-			c.output.insideAnchor = false
-		} else if markdownElem.Type() == ListItem && node.NextSibling == nil {
+			// c.output.popFormatter()
+		}
+		if markdownElem.Type() == ListItem && node.NextSibling == nil {
 			// last li tag in a list
 			_, err := c.listStack.pop()
 			if err != nil {

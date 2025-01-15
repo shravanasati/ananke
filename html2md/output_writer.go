@@ -6,33 +6,37 @@ import (
 
 // outputWriter is a wrapper around strings.Builder.
 // It ensures no more than 2 consecutive trailing newlines are written, even across multiple writes.
+// It also has a stack of formatters which transform the output for child elements of block elements.
 type outputWriter struct {
 	writer           *strings.Builder
 	trailingNewlines int
-	blockquoteCount  int
-	insideAnchor     bool // this is not a count because nested anchors are invalid in html
+	formatters       *stack[blockFormatter]
 }
 
 // newOutputWriter creates a new instance of outputWriter.
 func newOutputWriter() *outputWriter {
 	writer := new(strings.Builder)
+	formatterStack := newStack[blockFormatter]()
 	return &outputWriter{
 		writer:           writer,
 		trailingNewlines: 0,
-		blockquoteCount:  0,
-		insideAnchor:     false,
+		formatters:       formatterStack,
 	}
 }
 
-func (w *outputWriter) addBlockquote() {
-	w.blockquoteCount++
+func (w *outputWriter) addBlockquoteFormatter() {
+	w.formatters.push(&blockquoteFormatter{})
 }
 
-func (w *outputWriter) removeBlockquote() {
-	if w.blockquoteCount == 0 {
-		panic("remove blockquote called with 0 blockquoteCount")
+func (w *outputWriter) addListItemFormatter(isLast bool) {
+	w.formatters.push(&listItemFormatter{isLast: isLast})
+}
+
+func (w *outputWriter) popFormatter() {
+	_, err := w.formatters.pop()
+	if err != nil {
+		panic("no formatters present to pop")
 	}
-	w.blockquoteCount--
 }
 
 // countLeadingNewlines counts the number of leading newlines in a string.
@@ -59,7 +63,8 @@ func countTrailingNewlines(s string) int {
 	return count
 }
 
-// WriteString writes the string to the outputWriter, ensuring no more than 2 consecutive newlines.
+// WriteString writes the string to the outputWriter, ensuring no more than 2 consecutive newlines,
+// and applies all the present formatters on the given string.
 func (w *outputWriter) WriteString(s string) (int, error) {
 	if s == "" {
 		return 0, nil
@@ -88,12 +93,8 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 		w.trailingNewlines += trailingNewlines
 	}
 
-	if w.blockquoteCount > 0 {
-		s = strings.ReplaceAll(s, "\n", "\n"+strings.Repeat("> ", w.blockquoteCount))
-	}
-
-	if w.insideAnchor && w.trailingNewlines == 1 {
-		s = strings.ReplaceAll(s, "\n", "\n\\")
+	for formatter := range w.formatters.All() {
+		s = formatter.transform(s)
 	}
 
 	return w.writer.WriteString(s)

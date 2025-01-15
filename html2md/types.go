@@ -2,7 +2,6 @@ package html2md
 
 import (
 	"fmt"
-	"strings"
 )
 
 type MarkdownElementType int
@@ -253,9 +252,9 @@ func (li ListItemTag) Type() MarkdownElementType {
 
 func (li ListItemTag) StartCode() string {
 	if li.type_ == UnorderedList {
-		return strings.Repeat("\t", li.depth) + "- "
+		return "- "
 	}
-	return fmt.Sprintf("%v%v. ", strings.Repeat("\t", li.depth), li.number)
+	return fmt.Sprintf("%v. ", li.number)
 }
 func (li ListItemTag) EndCode() string {
 	return "\n"
