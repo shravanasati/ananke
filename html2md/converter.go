@@ -183,6 +183,10 @@ func (c *Converter) convertNode(node *html.Node) {
 		c.output.WriteString(text)
 
 	case html.ElementNode:
+		if node.Data == "script" {
+			return
+		}
+
 		// Determine the Markdown type
 		markdownElem := c.htmlNodeToMarkdownElement(node)
 
@@ -214,7 +218,7 @@ func (c *Converter) convertNode(node *html.Node) {
 			_, err := c.listStack.pop()
 			if err != nil {
 				// stack underflow
-				panic("no items in listStack to pop for the last li tag")
+				// panic("no items in listStack to pop for the last li tag")
 			}
 			c.output.WriteString("\n") // write an extra newline when the list ends
 		}
