@@ -9,6 +9,7 @@ import (
 )
 
 var languageRegex = regexp.MustCompile(`language-(\w+)`)
+var ignoreTags = []string{"script", "style"}
 
 type Converter struct {
 	// todo add options
@@ -183,7 +184,7 @@ func (c *Converter) convertNode(node *html.Node) {
 		c.output.WriteString(text)
 
 	case html.ElementNode:
-		if node.Data == "script" {
+		if itemInSlice(node.Data, ignoreTags){
 			return
 		}
 

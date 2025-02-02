@@ -12,3 +12,12 @@ func mapIter[In, Out any](f func(In) Out, seq iter.Seq[In]) iter.Seq[Out] {
 		}
 	}
 }
+
+func itemInSlice[T comparable](item T, slice []T) bool {
+	for _, val := range slice {
+		if val == item {
+			return true
+		}
+	}
+	return false
+}
