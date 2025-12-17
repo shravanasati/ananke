@@ -264,19 +264,24 @@ func NewListItemTag(depth int, type_ ListOrdering, number string) *ListItemTag {
 	return &ListItemTag{depth: depth, type_: type_, number: number}
 }
 
-type BlockquoteTag struct{}
+type BlockquoteTag struct {
+	insideList bool
+}
 
 func (bl BlockquoteTag) Type() MarkdownElementType {
 	return Blockquote
 }
 func (bl BlockquoteTag) StartCode() string {
+	if bl.insideList {
+		return " > "
+	}
 	return "> "
 }
 func (bl BlockquoteTag) EndCode() string {
 	return "\n\n"
 }
-func NewBlockquoteTag() *BlockquoteTag {
-	return &BlockquoteTag{}
+func NewBlockquoteTag(insideList bool) *BlockquoteTag {
+	return &BlockquoteTag{insideList: insideList}
 }
 
 type InlineCodeTag struct{}

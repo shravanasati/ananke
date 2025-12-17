@@ -88,12 +88,12 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 		w.trailingNewlines += trailingNewlines
 	}
 
-	if w.blockquoteCount > 0 {
-		s = strings.ReplaceAll(s, "\n", "\n"+strings.Repeat("> ", w.blockquoteCount))
+	if w.insideAnchor && s == "  \n" {
+		s = strings.ReplaceAll(s, "\n", "\n\\")
 	}
 
-	if w.insideAnchor && w.trailingNewlines == 1 {
-		s = strings.ReplaceAll(s, "\n", "\n\\")
+	if w.blockquoteCount > 0 {
+		s = strings.ReplaceAll(s, "\n", "\n"+strings.Repeat("> ", w.blockquoteCount))
 	}
 
 	return w.writer.WriteString(s)

@@ -186,7 +186,7 @@ ananke can read.
 		{
 			name:     "Nested list with blockquote",
 			input:    `<ul><li>Simple List</li><li><p>Someone once said:</p><blockquote>My famous quote</blockquote><span>by someone</span></li></ul>`,
-			expected: "- Simple List\n- Someone once said:\n\n > My famous quote\n\nby someone",
+			expected: "- Simple List\n- Someone once said:\n\n > My famous quote\n\nby someone\n\n",
 		},
 		{
 			name:     "Ordered list with start",

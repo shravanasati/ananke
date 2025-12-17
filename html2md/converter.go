@@ -144,7 +144,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 
 	case "blockquote":
 		c.output.addBlockquote()
-		return NewBlockquoteTag()
+		return NewBlockquoteTag(c.listStack.size() > 0)
 
 	case "pre":
 		c.preTagCount++
@@ -184,7 +184,7 @@ func (c *Converter) convertNode(node *html.Node) {
 		c.output.WriteString(text)
 
 	case html.ElementNode:
-		if itemInSlice(node.Data, ignoreTags){
+		if itemInSlice(node.Data, ignoreTags) {
 			return
 		}
 
