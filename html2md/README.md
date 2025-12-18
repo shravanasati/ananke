@@ -19,10 +19,21 @@ import (
 
 func main() {
 	converter := html2md.NewConverter()
-	// pass options
 
-	input := "<ul></ul>"
-	output := converter.ConvertString()
+	input := `
+	<p>This is a <strong>sample</strong> paragraph with <em>emphasis</em>.</p>
+	<ul>
+		<li>First item</li>
+		<li>Second item</li>
+	</ul>
+	`
+	output, err := converter.ConvertString(input)
+	if err != nil {
+		// err is non-nil when the html is malformed
+		fmt.Println("failed to convert html to markdown:", err)
+	}
+
+	fmt.Println("converted markdown:\n", output)
 }
 ```
 

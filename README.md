@@ -4,7 +4,11 @@ A HTML to markdown converter.
 
 Powered by [html2md](https://github.com/shravanasati/ananke/tree/master/html2md).
 
-<!-- todo include example screenshots -->
+### Installation
+
+```
+go install github.com/shravanasati/ananke
+```
 
 ### Usage
 

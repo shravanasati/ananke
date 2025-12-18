@@ -21,6 +21,8 @@ type Converter struct {
 	codeContentWritten bool
 }
 
+// NewConverter creates a converter instance. 
+// Each converter must be used **exactly once** for an input, and is NOT thread-safe.
 func NewConverter() *Converter {
 	stack := newStack[*listEntry]()
 	return &Converter{
@@ -337,6 +339,9 @@ func (c *Converter) convertNode(node *html.Node) {
 	}
 }
 
+// ConvertString converts the given HTML input to markdown. 
+// An error is returned only when the HTML input is malformed and cannot be parsed.
+// The input is assumed to be UTF-8 encoded.
 func (c *Converter) ConvertString(input string) (string, error) {
 	// Parse the HTML input into a document tree
 	doc, err := html.Parse(strings.NewReader(input))
