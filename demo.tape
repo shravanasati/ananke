@@ -14,21 +14,21 @@ Type 'echo "<h1> hello from ananke </h1>" | ananke'
 Enter
 Sleep 1500ms
 
-Type 'cat README.html | ananke > sample.html'
+Type 'cat README.html | ananke > sample.md'
 Enter
 Sleep 1500ms
 Enter
 
-Type 'bat -P sample.html'
+Type 'bat -P sample.md'
 Enter
 Sleep 1s
 
 
-Type 'curl --no-progress-meter -L https://reverieai.vercel.app | ananke > sample.html'
+Type 'curl --no-progress-meter -L https://reverieai.vercel.app | ananke > sample.md'
 Enter
 Sleep 1500ms
 Enter
 
-Type 'glow sample.html'
+Type 'glow sample.md'
 Enter 
 Sleep 2s
