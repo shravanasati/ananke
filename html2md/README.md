@@ -3,7 +3,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/shravanasati/ananke/html2md.svg)
 ](https://pkg.go.dev/github.com/shravanasati/ananke/html2md)
 
-html2md is a Go library which provides a simple interface to convert HTML code to markdown. It aims to support the [CommonMark specification](https://spec.commonmark.org/0.31.2/) as well as GitHub-flavored markdown.
+html2md is a Go library which provides a simple interface to convert HTML code to markdown. It aims to support the [CommonMark specification](https://spec.commonmark.org/0.31.2/).
 
 It powers [ananke](https://github.com/shravanasati/ananke), a CLI tool which converts HTML to Markdown.
 

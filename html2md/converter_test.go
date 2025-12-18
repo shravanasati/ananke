@@ -257,6 +257,25 @@ ananke can read.
 			input:    `<a href="/about.html" title="title text">About</a>`,
 			expected: `[About](/about.html "title text")`,
 		},
+		{
+			name: "Collapses whitespace inside blocks",
+			input: `<h1>Title</h1>
+
+<p>
+    This   has
+        uneven   spacing.
+
+    Second line   continues.
+</p>`,
+			expected: "# Title\n\nThis has uneven spacing.\n\nSecond line continues.\n\n",
+		},
+		{
+			name: "Trims leading whitespace in fenced code",
+			input: `<pre><code class="language-sh">
+	  echo hi
+</code></pre>`,
+			expected: "```sh\necho hi\n```\n",
+		},
 	}
 
 	for _, test := range tests {

@@ -13,21 +13,23 @@ var ignoreTags = []string{"script", "style"}
 
 type Converter struct {
 	// todo add options
-	listStack    *stack[*listEntry]
-	processed    map[string]bool
-	preTagCount  int
-	output       *outputWriter
-	codeTagCount int
+	listStack          *stack[*listEntry]
+	processed          map[string]bool
+	preTagCount        int
+	output             *outputWriter
+	codeTagCount       int
+	codeContentWritten bool
 }
 
 func NewConverter() *Converter {
 	stack := newStack[*listEntry]()
 	return &Converter{
-		listStack:    stack,
-		processed:    map[string]bool{},
-		preTagCount:  0,
-		codeTagCount: 0,
-		output:       newOutputWriter(),
+		listStack:          stack,
+		processed:          map[string]bool{},
+		preTagCount:        0,
+		codeTagCount:       0,
+		output:             newOutputWriter(),
+		codeContentWritten: false,
 	}
 }
 
@@ -54,6 +56,111 @@ func findCodeLanguage(node *html.Node) string {
 	}
 
 	return matches[1]
+}
+
+func (c *Converter) writeText(text string, trimTrailingSpace bool) {
+	if text == "" {
+		return
+	}
+
+	if c.codeTagCount > 0 {
+		// preserve exact content inside code blocks, but trim leading formatting
+		// whitespace when a fenced block has just opened to avoid empty lines.
+		if c.preTagCount > 0 && !c.codeContentWritten {
+			text = strings.TrimLeft(text, "\n\t\r ")
+		}
+		if trimTrailingSpace {
+			newlineCount := strings.Count(text, "\n")
+			text = strings.TrimRight(text, "\t\r ")
+			if newlineCount <= 1 {
+				text = strings.TrimRight(text, "\n")
+			} else {
+				for strings.HasSuffix(text, "\n\n") {
+					text = strings.TrimSuffix(text, "\n")
+				}
+			}
+		}
+		if text == "" {
+			return
+		}
+		c.codeContentWritten = true
+		c.output.WriteString(text)
+		return
+	}
+
+	originalText := text
+	originalTrailingNewline := strings.HasSuffix(strings.TrimRight(originalText, " \t\r"), "\n")
+	isHTMLSpace := func(r rune) bool {
+		return r == ' ' || r == '\n' || r == '\t' || r == '\r' || r == '\f' || r == '\v'
+	}
+
+	leadingLen := 0
+	for leadingLen < len(text) {
+		if !isHTMLSpace(rune(text[leadingLen])) {
+			break
+		}
+		leadingLen++
+	}
+
+	leading := text[:leadingLen]
+	leadingNewlineCount := strings.Count(leading, "\n")
+	prefix := ""
+	if leadingNewlineCount > 0 && !c.output.endsWithWhitespace() {
+		if leadingNewlineCount >= 2 {
+			prefix = "\n\n"
+		} else {
+			prefix = "\n"
+		}
+	} else if leadingLen > 0 && !c.output.endsWithWhitespace() && !c.output.isEmpty() {
+		prefix = " "
+	}
+
+	text = text[leadingLen:]
+	isOnlyWhitespace := strings.Trim(originalText, " \t\r\n\v\f") == ""
+
+	if isOnlyWhitespace {
+		newlineCount := strings.Count(originalText, "\n")
+		switch {
+		case newlineCount >= 2:
+			text = "\n\n"
+		case newlineCount == 1:
+			text = "\n"
+		default:
+			text = " "
+		}
+	} else {
+		text = escapeMarkdown(text)
+		text = collapseWhitespace(text)
+		if text == "" {
+			return
+		}
+
+		if strings.HasPrefix(text, " ") && (c.output.isEmpty() || c.output.endsWithWhitespace()) {
+			text = strings.TrimLeft(text, " ")
+			if text == "" {
+				return
+			}
+		}
+
+		if trimTrailingSpace {
+			text = strings.TrimRight(text, " ")
+			if text == "" {
+				return
+			}
+			if originalTrailingNewline && !strings.HasSuffix(text, "\n") {
+				text += "\n"
+			}
+		}
+	}
+
+	if prefix != "" {
+		if strings.HasPrefix(prefix, " ") && (c.output.isEmpty() || c.output.endsWithWhitespace()) {
+			prefix = ""
+		}
+		text = prefix + text
+	}
+
+	c.output.WriteString(text)
 }
 
 func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
@@ -175,13 +282,7 @@ func (c *Converter) htmlNodeToMarkdownElement(node *html.Node) MarkdownElement {
 func (c *Converter) convertNode(node *html.Node) {
 	switch node.Type {
 	case html.TextNode:
-		// Write the text content, escaping special Markdown characters
-		// * dont escape when inside a pre or fenced code tag
-		text := node.Data
-		if c.codeTagCount == 0 {
-			text = escapeMarkdown(text)
-		}
-		c.output.WriteString(text)
+		c.writeText(node.Data, node.NextSibling == nil)
 
 	case html.ElementNode:
 		if itemInSlice(node.Data, ignoreTags) {
@@ -190,9 +291,15 @@ func (c *Converter) convertNode(node *html.Node) {
 
 		// Determine the Markdown type
 		markdownElem := c.htmlNodeToMarkdownElement(node)
+		if markdownElem.Type() == FencedCode && !c.output.isEmpty() && !c.output.endsWithNewline() {
+			c.output.WriteString("\n")
+		}
 
 		// Write opening Markdown syntax
 		c.output.WriteString(markdownElem.StartCode())
+		if markdownElem.Type() == FencedCode {
+			c.codeContentWritten = false
+		}
 
 		// Recursively process child nodes
 		for child := range node.ChildNodes() {
@@ -212,6 +319,9 @@ func (c *Converter) convertNode(node *html.Node) {
 			c.preTagCount--
 		} else if markdownElem.Type() == InlineCode || markdownElem.Type() == FencedCode {
 			c.codeTagCount--
+			if markdownElem.Type() == FencedCode {
+				c.codeContentWritten = false
+			}
 		} else if markdownElem.Type() == Anchor {
 			c.output.insideAnchor = false
 		} else if markdownElem.Type() == ListItem && node.NextSibling == nil {

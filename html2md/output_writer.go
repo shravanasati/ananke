@@ -11,6 +11,8 @@ type outputWriter struct {
 	trailingNewlines int
 	blockquoteCount  int
 	insideAnchor     bool // this is not a count because nested anchors are invalid in html
+	hasLastByte      bool
+	lastByte         byte
 }
 
 // newOutputWriter creates a new instance of outputWriter.
@@ -21,6 +23,7 @@ func newOutputWriter() *outputWriter {
 		trailingNewlines: 0,
 		blockquoteCount:  0,
 		insideAnchor:     false,
+		hasLastByte:      false,
 	}
 }
 
@@ -33,6 +36,27 @@ func (w *outputWriter) removeBlockquote() {
 		panic("remove blockquote called with 0 blockquoteCount")
 	}
 	w.blockquoteCount--
+}
+
+func (w *outputWriter) isEmpty() bool {
+	return w.writer.Len() == 0
+}
+
+func (w *outputWriter) endsWithWhitespace() bool {
+	if !w.hasLastByte {
+		return true
+	}
+	return w.lastByte == ' ' || w.lastByte == '\n' || w.lastByte == '\t'
+}
+
+func (w *outputWriter) endsWithNewline() bool {
+	if w.trailingNewlines > 0 {
+		return true
+	}
+	if !w.hasLastByte {
+		return false
+	}
+	return w.lastByte == '\n'
 }
 
 // countLeadingNewlines counts the number of leading newlines in a string.
@@ -96,7 +120,12 @@ func (w *outputWriter) WriteString(s string) (int, error) {
 		s = strings.ReplaceAll(s, "\n", "\n"+strings.Repeat("> ", w.blockquoteCount))
 	}
 
-	return w.writer.WriteString(s)
+	n, err := w.writer.WriteString(s)
+	if len(s) > 0 {
+		w.hasLastByte = true
+		w.lastByte = s[len(s)-1]
+	}
+	return n, err
 }
 
 // String returns the complete string from the outputWriter.
