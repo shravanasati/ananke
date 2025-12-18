@@ -38,6 +38,11 @@ func TestConvertString(t *testing.T) {
 			expected: "# Title\n## Subtitle\n",
 		},
 		{
+			name:     "More Headings",
+			input:    `<h5>Title</h5><h6>Subtitle</h6>`,
+			expected: "##### Title\n###### Subtitle\n",
+		},
+		{
 			name:     "Heading with Bold text",
 			input:    `<h4><strong>Important</strong> heading</h4>`,
 			expected: `#### **Important** heading` + "\n",
